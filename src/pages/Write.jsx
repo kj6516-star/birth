@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../back/supabaseClient'; // 👈 본인 프로젝트의 supabaseClient 경로 확인
+import ReactDOM from 'react-dom';
+import { supabase } from '../back/supabaseClient';
 
 export default function Write() {
   const [formData, setFormData] = useState({
@@ -28,6 +29,18 @@ export default function Write() {
   const [loading, setLoading] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // 모달이 열릴 때 배경(body) 스크롤 고정 및 해제
+  useEffect(() => {
+    if (showConfirmModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showConfirmModal]);
 
   useEffect(() => {
     return () => {
@@ -121,6 +134,17 @@ export default function Write() {
 
       if (error) throw error;
 
+      try {
+        await supabase.functions.invoke('send-email', {
+          body: {
+            formType: 'audition',
+            ...submitData,
+          },
+        });
+      } catch (emailError) {
+        console.error('메일 알림 전송 실패:', emailError);
+      }
+
       setShowConfirmModal(false);
       setIsSubmitted(true);
 
@@ -147,8 +171,112 @@ export default function Write() {
   const getFieldText = (f) => f === 'actor' ? '배우' : f === 'entertainer' ? '엔터테이너' : f;
     
   return (
-    <div className="w-full bg-white text-neutral-900 select-none min-h-screen flex flex-col justify-between">
+    <div className="w-full bg-white text-neutral-900 select-none min-h-screen flex flex-col justify-between relative">
       
+      {/* ================= 💡 ReactDOM.createPortal을 이용해 모달을 body 최상단으로 분리 ================= */}
+      {showConfirmModal && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl relative my-auto">
+            
+            <div className="px-6 py-5 border-b border-neutral-200 shrink-0 bg-white rounded-t-2xl">
+              <h3 className="text-xl font-black text-neutral-900">📝 지원서 내용 확인</h3>
+              <p className="text-sm text-neutral-500 mt-1">작성하신 내용이 정확한지 입력창 형태로 검토해주세요.</p>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-white">
+              <div className="space-y-3">
+                <h4 className="text-sm font-bold text-cyan-600 uppercase tracking-wide">01. 기본 인적사항</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-neutral-500">이름 (Name)</label>
+                    <input type="text" value={formData.name} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-neutral-500">성별 (Gender)</label>
+                    <input type="text" value={getGenderText(formData.gender)} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-neutral-500">지원분야 (Field)</label>
+                    <input type="text" value={getFieldText(formData.field)} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">생년월일 (Birth Date)</label>
+                  <input type="text" value={`${formData.birthYear || ''}년 ${formData.birthMonth || ''}월 ${formData.birthDay || ''}일`} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-neutral-500">연락처 (Phone)</label>
+                    <input type="text" value={formData.phone} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-neutral-500">이메일 (Email)</label>
+                    <input type="text" value={formData.email} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <h4 className="text-sm font-bold text-cyan-600 uppercase tracking-wide">02. SNS 및 포트폴리오 링크</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-neutral-500">인스타그램</label>
+                    <input type="text" value={formData.instagram || '입력 안 함'} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-xs font-semibold text-neutral-500">유튜브 / 영상 링크</label>
+                    <input type="text" value={formData.videoLink || '입력 안 함'} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <h4 className="text-sm font-bold text-cyan-600 uppercase tracking-wide">03. 자기소개 및 첨부</h4>
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">자기소개</label>
+                  <textarea value={formData.introduction || '입력 안 함'} disabled rows="4" className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed resize-none" />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">첨부된 프로필 사진</label>
+                  {photoPreview ? (
+                    <div className="w-32 h-40 border rounded overflow-hidden">
+                      <img src={photoPreview} alt="최종 확인 미리보기" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <p className="text-sm text-neutral-500">등록된 사진이 없습니다.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-neutral-200 shrink-0 flex gap-3 bg-white rounded-b-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={loading}
+                className="flex-1 py-3.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold rounded-xl transition"
+              >
+                수정하기
+              </button>
+              <button
+                type="button"
+                onClick={handleFinalSubmit}
+                disabled={loading}
+                className="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2"
+              >
+                {loading ? '전송 중...' : '최종 전송하기'}
+              </button>
+            </div>
+
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* ==================================================================== */}
+
       {/* 1. 상단 타이틀 섹션 */}
       <section className="w-full pt-28 pb-12 px-6 text-center bg-white border-b border-neutral-100">
         <div className="max-w-4xl mx-auto space-y-2">
@@ -183,7 +311,6 @@ export default function Write() {
           </div>
         ) : (
           <form onSubmit={handlePreSubmit} className="space-y-10">
-            
             {/* 01. 기본 인적사항 */}
             <div className="space-y-4">
               <h2 className="text-cyan-600 font-bold text-xl tracking-wide">01. 기본 인적사항</h2>
@@ -204,8 +331,8 @@ export default function Write() {
                     className="w-full p-3.5 border border-neutral-300 rounded focus:outline-none focus:border-amber-500 text-base bg-white text-neutral-700"
                   >
                     <option value="">성별 선택</option>
-                    <option value="female">여성 (Female)</option>
                     <option value="male">남성 (Male)</option>
+                    <option value="female">여성 (Female)</option>
                   </select>
                 </div>
                 <div className="space-y-1">
@@ -415,118 +542,6 @@ export default function Write() {
           </form>
         )}
       </section>
-
-      {/* ================= 💡 완벽하게 수정된 확인 모달 레이아웃 ================= */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden">
-          
-          {/* 모달 박스: 화면 높이의 최대 85% 고정 및 절대 벗어나지 않는 Flex 구조 */}
-          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl relative">
-            
-            {/* 1. 상단 타이틀 영역 (고정) */}
-            <div className="px-6 py-5 border-b border-neutral-200 shrink-0 bg-white rounded-t-2xl">
-              <h3 className="text-xl font-black text-neutral-900">📝 지원서 내용 확인</h3>
-              <p className="text-sm text-neutral-500 mt-1">작성하신 내용이 정확한지 입력창 형태로 검토해주세요.</p>
-            </div>
-
-            {/* 2. 스크롤 영역 (이 부분만 스크롤됨) */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-white">
-              
-              {/* 01. 기본 인적사항 확인 */}
-              <div className="space-y-3">
-                <h4 className="text-sm font-bold text-cyan-600 uppercase tracking-wide">01. 기본 인적사항</h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-neutral-500">이름 (Name)</label>
-                    <input type="text" value={formData.name} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-neutral-500">성별 (Gender)</label>
-                    <input type="text" value={getGenderText(formData.gender)} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-neutral-500">지원분야 (Field)</label>
-                    <input type="text" value={getFieldText(formData.field)} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">생년월일 (Birth Date)</label>
-                  <input type="text" value={`${formData.birthYear || ''}년 ${formData.birthMonth || ''}월 ${formData.birthDay || ''}일`} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-neutral-500">연락처 (Phone)</label>
-                    <input type="text" value={formData.phone} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-neutral-500">이메일 (Email)</label>
-                    <input type="text" value={formData.email} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                  </div>
-                </div>
-              </div>
-
-              {/* 02. SNS 링크 확인 */}
-              <div className="space-y-3 pt-2">
-                <h4 className="text-sm font-bold text-cyan-600 uppercase tracking-wide">02. SNS 및 포트폴리오 링크</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-neutral-500">인스타그램</label>
-                    <input type="text" value={formData.instagram || '입력 안 함'} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-neutral-500">유튜브 / 영상 링크</label>
-                    <input type="text" value={formData.videoLink || '입력 안 함'} disabled className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed" />
-                  </div>
-                </div>
-              </div>
-
-              {/* 03. 자기소개 및 사진 미리보기 확인 */}
-              <div className="space-y-3 pt-2">
-                <h4 className="text-sm font-bold text-cyan-600 uppercase tracking-wide">03. 자기소개 및 첨부</h4>
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">자기소개</label>
-                  <textarea value={formData.introduction || '입력 안 함'} disabled rows="4" className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed resize-none" />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">첨부된 프로필 사진</label>
-                  {photoPreview ? (
-                    <div className="w-32 h-40 border rounded overflow-hidden">
-                      <img src={photoPreview} alt="최종 확인 미리보기" className="w-full h-full object-cover" />
-                    </div>
-                  ) : (
-                    <p className="text-sm text-neutral-500">등록된 사진이 없습니다.</p>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            {/* 3. 하단 버튼 영역 (고정 노출 - 절대 안 잘림) */}
-            <div className="px-6 py-4 border-t border-neutral-200 shrink-0 flex gap-3 bg-white rounded-b-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-              <button
-                type="button"
-                onClick={() => setShowConfirmModal(false)}
-                disabled={loading}
-                className="flex-1 py-3.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold rounded-xl transition"
-              >
-                수정하기
-              </button>
-              <button
-                type="button"
-                onClick={handleFinalSubmit}
-                disabled={loading}
-                className="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2"
-              >
-                {loading ? '전송 중...' : '최종 전송하기'}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
 
     </div>
   );

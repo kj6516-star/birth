@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { supabase } from '../back/supabaseClient';
+import { supabase } from '../back/supabaseClient'; // 👈 본인 프로젝트의 supabaseClient 경로 확인
 
 export default function Contact() {
   const location = useLocation();
@@ -13,7 +14,7 @@ export default function Contact() {
     phone: '',
     email: '',
     category: targetActor ? 'casting' : '',
-    targetActor: targetActor,
+    actor: targetActor,
     title: targetActor ? `[캐스팅 제안] ${targetActor} 배우 작품/광고 출연 문의` : '',
     content: '',
     agree: false,
@@ -22,6 +23,18 @@ export default function Contact() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 모달이 열릴 때 배경(body) 스크롤 고정 및 해제
+  useEffect(() => {
+    if (showConfirmModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showConfirmModal]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -63,23 +76,37 @@ export default function Contact() {
   };
 
   const handleFinalSubmit = async () => {
+    console.log("🚀 handleFinalSubmit 함수 실행됨!");
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from('Contact_form').insert([
-        {
-          name: formData.name,
-          company: formData.company,
-          email: formData.email,
-          phone: formData.phone,
-          category: formData.category,
-          actor: formData.targetActor,
-          title: formData.title,
-          content: formData.content,
-          agree: formData.agree,
-        },
-      ]);
+      const submitData = {
+        name: formData.name,
+        company: formData.company || null,
+        email: formData.email,
+        phone: formData.phone || null,
+        category: formData.category,
+        actor: formData.actor || null, // DB 컬럼명에 맞춤
+        title: formData.title,
+        content: formData.content,
+        agree: formData.agree,
+      };
+
+      // 1. Supabase DB에 문의 내역 저장
+      const { error } = await supabase.from('Contact_form').insert([submitData]);
 
       if (error) throw error;
+
+      // 2. Write.jsx와 동일한 구조로 Edge Function 호출 (필드명 평탄화 및 formType 통일)
+      try {
+        await supabase.functions.invoke('send-contact-email', {
+          body: {
+            formType: 1,
+            ...submitData,
+          },
+        });
+      } catch (emailError) {
+        console.error('메일 알림 전송 실패:', emailError);
+      }
 
       setShowConfirmModal(false);
       setIsSubmitted(true);
@@ -102,8 +129,128 @@ export default function Contact() {
   };
 
   return (
-    <div className="w-full bg-white text-neutral-900 select-none min-h-screen flex flex-col justify-between">
+    <div className="w-full bg-white text-neutral-900 select-none min-h-screen flex flex-col justify-between relative">
       
+      {/* ================= 💡 ReactDOM.createPortal을 이용해 모달을 body 최상단으로 분리 ================= */}
+      {showConfirmModal && ReactDOM.createPortal(
+        <div className="fixed inset-0 z-[999999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col shadow-2xl relative my-auto">
+            
+            <div className="px-6 py-5 border-b border-neutral-200 shrink-0 bg-white rounded-t-2xl">
+              <h3 className="text-xl font-black text-neutral-900">📝 문의하기</h3>
+              <p className="text-sm text-neutral-500 mt-1">작성하신 내용이 정확한지 다시 한번 검토해주세요.</p>
+            </div>
+
+            <div className="p-6 overflow-y-auto space-y-4 flex-1 bg-white text-neutral-700">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">성함 (NAME)</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    disabled
+                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">소속 / 회사명 (COMPANY)</label>
+                  <input
+                    type="text"
+                    value={formData.company || '없음'}
+                    disabled
+                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">이메일 (E-MAIL)</label>
+                  <input
+                    type="text"
+                    value={formData.email}
+                    disabled
+                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">연락처 (PHONE)</label>
+                  <input
+                    type="text"
+                    value={formData.phone || '없음'}
+                    disabled
+                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">문의 분류 (CATEGORY)</label>
+                  <input
+                    type="text"
+                    value={getCategoryText(formData.category)}
+                    disabled
+                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-xs font-semibold text-neutral-500">대상 배우 (TARGET ACTOR)</label>
+                  <input
+                    type="text"
+                    value={formData.actor || '선택 안 함'}
+                    disabled
+                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-neutral-500">제목 (SUBJECT)</label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  disabled
+                  className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-neutral-500">내용 (MESSAGE)</label>
+                <textarea
+                  value={formData.content}
+                  disabled
+                  rows="4"
+                  className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="px-6 py-4 border-t border-neutral-200 shrink-0 flex gap-3 bg-white rounded-b-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+              <button
+                type="button"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={isSubmitting}
+                className="flex-1 py-3.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold rounded-xl transition"
+              >
+                수정하기
+              </button>
+              <button
+                type="button"
+                onClick={handleFinalSubmit}
+                disabled={isSubmitting}
+                className="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? '전송 중...' : '최종 전송하기'}
+              </button>
+            </div>
+
+          </div>
+        </div>,
+        document.body
+      )}
+      {/* ==================================================================== */}
+
       {/* 상단 타이틀 섹션 */}
       <section className="w-full pt-28 pb-12 px-6 text-center bg-white border-b border-neutral-100">
         <div className="max-w-4xl mx-auto space-y-2">
@@ -347,127 +494,6 @@ export default function Contact() {
         )}
 
       </section>
-
-      {/* ================= 입력 내용 확인 모달 (입력창 스타일 적용) ================= */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-8 space-y-6 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
-            
-            <div className="border-b pb-4">
-              <h3 className="text-xl font-black text-neutral-900">📝 문의하기</h3>
-              <p className="text-sm text-neutral-500 mt-1">작성하신 내용이 정확한지 다시 한번 검토해주세요.</p>
-            </div>
-
-            {/* 실제 입력창 형태를 재현한 읽기 전용 미리보기 영역 */}
-            <div className="space-y-4 text-neutral-700">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">성함 (NAME)</label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    disabled
-                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">소속 / 회사명 (COMPANY)</label>
-                  <input
-                    type="text"
-                    value={formData.company || '없음'}
-                    disabled
-                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">이메일 (E-MAIL)</label>
-                  <input
-                    type="text"
-                    value={formData.email}
-                    disabled
-                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">연락처 (PHONE)</label>
-                  <input
-                    type="text"
-                    value={formData.phone || '없음'}
-                    disabled
-                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">문의 분류 (CATEGORY)</label>
-                  <input
-                    type="text"
-                    value={getCategoryText(formData.category)}
-                    disabled
-                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="block text-xs font-semibold text-neutral-500">대상 배우 (TARGET ACTOR)</label>
-                  <input
-                    type="text"
-                    value={formData.targetActor || '선택 안 함'}
-                    disabled
-                    className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-neutral-500">제목 (SUBJECT)</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  disabled
-                  className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold text-neutral-500">내용 (MESSAGE)</label>
-                <textarea
-                  value={formData.content}
-                  disabled
-                  rows="4"
-                  className="w-full p-3 bg-neutral-100 border border-neutral-300 rounded text-neutral-800 text-sm cursor-not-allowed resize-none"
-                />
-              </div>
-
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowConfirmModal(false)}
-                disabled={isSubmitting}
-                className="flex-1 py-3.5 bg-neutral-200 hover:bg-neutral-300 text-neutral-800 font-bold rounded-xl transition"
-              >
-                수정하기
-              </button>
-              <button
-                type="button"
-                onClick={handleFinalSubmit}
-                disabled={isSubmitting}
-                className="flex-1 py-3.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl transition shadow-md flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? '전송 중...' : '최종 전송하기'}
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
 
     </div>
   );
