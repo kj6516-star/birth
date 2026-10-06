@@ -220,30 +220,30 @@ export default function Notice() {
       
       {/* 관리자 로그인 상태 알림 바 */}
       {user && (
-        <div className="bg-neutral-900 text-white px-6 py-3 text-sm flex justify-between items-center">
-          <span>관리자 계정으로 접속 중입니다 ({user.email})</span>
-          <button onClick={handleLogout} className="underline hover:text-neutral-300">로그아웃</button>
+        <div className="bg-neutral-900 text-white px-4 md:px-6 py-2.5 text-xs md:text-sm flex justify-between items-center">
+          <span className="truncate mr-2">관리자 계정으로 접속 중입니다 ({user.email})</span>
+          <button onClick={handleLogout} className="underline hover:text-neutral-300 shrink-0">로그아웃</button>
         </div>
       )}
 
       {/* 1. 상단 타이틀 섹션 */}
-      <section className="w-full pt-32 pb-16 px-6 text-center bg-white border-b border-neutral-100">
-        <div className="max-w-5xl mx-auto space-y-4">
-          <span className="text-sm md:text-base font-semibold tracking-[0.3em] text-neutral-400 uppercase">
+      <section className="w-full pt-24 md:pt-32 pb-10 md:pb-16 px-4 md:px-6 text-center bg-white border-b border-neutral-100">
+        <div className="max-w-5xl mx-auto space-y-3 md:space-y-4">
+          <span className="text-xs md:text-base font-semibold tracking-[0.3em] text-neutral-400 uppercase">
             News & Notice
           </span>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-neutral-900">
+          <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-neutral-900">
             공지사항
           </h1>
         </div>
       </section>
 
       {/* 2. 메인 게시판 영역 */}
-      <section className="max-w-6xl mx-auto px-6 py-12 w-full flex-1">
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-8 md:py-12 w-full flex-1">
         
         {/* 카테고리 탭 및 관리자 글쓰기 버튼 영역 */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 border-b border-neutral-200 pb-5 gap-4">
-          <div className="flex items-center space-x-6 text-lg md:text-xl font-medium text-neutral-400 overflow-x-auto w-full md:w-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-10 border-b border-neutral-200 pb-4 md:pb-5 gap-4">
+          <div className="flex items-center space-x-4 md:space-x-6 text-base md:text-xl font-medium text-neutral-400 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-none">
             {['all', 'news', 'interview', 'notice'].map((tab) => (
               <React.Fragment key={tab}>
                 <button 
@@ -252,7 +252,7 @@ export default function Notice() {
                 >
                   {tab}
                 </button>
-                {tab !== 'notice' && <span>|</span>}
+                {tab !== 'notice' && <span className="text-neutral-300">|</span>}
               </React.Fragment>
             ))}
           </div>
@@ -261,27 +261,26 @@ export default function Notice() {
           {user && (
             <button 
               onClick={() => openEditor(null)}
-              className="bg-neutral-900 text-white px-6 py-3 text-base font-medium hover:bg-black transition whitespace-nowrap"
+              className="bg-neutral-900 text-white px-5 md:px-6 py-2.5 md:py-3 text-sm md:text-base font-medium hover:bg-black transition whitespace-nowrap w-full md:w-auto text-center"
             >
               글쓰기
             </button>
           )}
         </div>
 
-        {/* 테이블 구조 게시판 */}
+        {/* 테이블 구조 게시판 (모바일 스크롤 지원) */}
         <div className="w-full overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse min-w-[500px] md:min-w-full">
             <thead>
-              <tr className="border-t-2 border-b-2 border-neutral-900 text-base md:text-lg text-neutral-800 font-semibold uppercase tracking-wider">
-                <th className="py-5 px-4 w-24 text-center">No</th>
-                <th className="py-5 px-6">Subject</th>
-                <th className="py-5 px-6 w-48">Name</th>
-                <th className="py-5 px-4 w-36 text-right">Date</th>
-                {user && <th className="py-5 px-4 w-28 text-center">Manage</th>}
+              <tr className="border-t-2 border-b-2 border-neutral-900 text-sm md:text-lg text-neutral-800 font-semibold uppercase tracking-wider">
+                <th className="py-4 md:py-5 px-3 md:px-4 w-16 md:w-24 text-center">No</th>
+                <th className="py-4 md:py-5 px-4 md:px-6">Subject</th>
+                <th className="py-4 md:py-5 px-3 md:px-4 w-28 md:w-36 text-right">Date</th>
+                {user && <th className="py-4 md:py-5 px-3 md:px-4 w-24 md:w-28 text-center">Manage</th>}
               </tr>
             </thead>
             
-            <tbody className="divide-y divide-neutral-200 text-lg md:text-xl">
+            <tbody className="divide-y divide-neutral-200 text-base md:text-xl">
               {currentPosts.length > 0 ? (
                 currentPosts.map((post) => (
                   <tr 
@@ -289,33 +288,30 @@ export default function Notice() {
                     onClick={() => setSelectedPost(post)}
                     className="group hover:bg-neutral-50 transition cursor-pointer"
                   >
-                    <td className="py-6 px-4 text-center text-neutral-500 font-medium text-base md:text-lg">
+                    <td className="py-4 md:py-6 px-3 md:px-4 text-center text-neutral-500 font-medium text-sm md:text-lg">
                       {post.id}
                     </td>
-                    <td className="py-6 px-6 font-medium text-neutral-900 group-hover:text-black tracking-normal">
-                      <span className="text-sm text-neutral-400 uppercase mr-3 font-semibold">[{post.category}]</span>
-                      {post.title}
+                    <td className="py-4 md:py-6 px-4 md:px-6 font-medium text-neutral-900 group-hover:text-black tracking-normal">
+                      <span className="text-xs md:text-sm text-neutral-400 uppercase mr-2 md:mr-3 font-semibold">[{post.category}]</span>
+                      <span className="text-sm md:text-xl">{post.title}</span>
                     </td>
-                    <td className="py-6 px-6 text-neutral-600 text-base md:text-lg">
-                      TKM MANAGEMENT
-                    </td>
-                    <td className="py-6 px-4 text-right text-neutral-500 text-base md:text-lg">
+                    <td className="py-4 md:py-6 px-3 md:px-4 text-right text-neutral-500 text-xs md:text-lg whitespace-nowrap">
                       {post.created_at ? post.created_at.split('T')[0].replace(/-/g, '.') : ''}
                     </td>
 
                     {/* 관리자일 때만 보이는 수정/삭제 버튼 */}
                     {user && (
-                      <td className="py-6 px-4 text-center" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex justify-center space-x-2">
+                      <td className="py-4 md:py-6 px-3 md:px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-center space-x-1.5 md:space-x-2">
                           <button 
                             onClick={() => openEditor(post)}
-                            className="text-sm border border-neutral-300 px-3 py-1.5 hover:bg-neutral-100"
+                            className="text-xs md:text-sm border border-neutral-300 px-2.5 md:px-3 py-1 md:py-1.5 hover:bg-neutral-100"
                           >
                             수정
                           </button>
                           <button 
                             onClick={(e) => handleDelete(post.id, e)}
-                            className="text-sm border border-red-200 text-red-600 px-3 py-1.5 hover:bg-red-50"
+                            className="text-xs md:text-sm border border-red-200 text-red-600 px-2.5 md:px-3 py-1 md:py-1.5 hover:bg-red-50"
                           >
                             삭제
                           </button>
@@ -326,7 +322,7 @@ export default function Notice() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={user ? 5 : 4} className="py-20 text-center text-neutral-400 text-lg">
+                  <td colSpan={user ? 4 : 3} className="py-16 md:py-20 text-center text-neutral-400 text-base md:text-lg">
                     등록된 공지사항이 없습니다.
                   </td>
                 </tr>
@@ -336,19 +332,21 @@ export default function Notice() {
         </div>
 
         {/* 검색창 및 페이지네이션 */}
-        <div className="mt-16 flex flex-col items-center space-y-8">
-          <div className="flex items-center space-x-1.5">
+        <div className="mt-12 md:mt-16 flex flex-col items-center space-y-6 md:space-y-8">
+          
+          {/* 페이지네이션 버튼 (모바일 스크롤 가능하도록 flex-wrap 적용) */}
+          <div className="flex items-center space-x-1 flex-wrap justify-center gap-y-2">
             <button 
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
-              className="w-12 h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-base"
+              className="w-10 h-10 md:w-12 md:h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-sm md:text-base"
             >
               &laquo;
             </button>
             <button 
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="w-12 h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-base"
+              className="w-10 h-10 md:w-12 md:h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-sm md:text-base"
             >
               &lsaquo;
             </button>
@@ -357,7 +355,7 @@ export default function Notice() {
               <button
                 key={num}
                 onClick={() => setCurrentPage(num)}
-                className={`w-12 h-12 border flex items-center justify-center text-base font-medium transition ${
+                className={`w-10 h-10 md:w-12 md:h-12 border flex items-center justify-center text-sm md:text-base font-medium transition ${
                   currentPage === num 
                     ? 'border-neutral-900 text-neutral-900 font-bold bg-neutral-50' 
                     : 'border-neutral-300 text-neutral-600 hover:bg-neutral-100'
@@ -370,24 +368,25 @@ export default function Notice() {
             <button 
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="w-12 h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-base"
+              className="w-10 h-10 md:w-12 md:h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-sm md:text-base"
             >
               &rsaquo;
             </button>
             <button 
               onClick={() => setCurrentPage(totalPages)}
               disabled={currentPage === totalPages}
-              className="w-12 h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-base"
+              className="w-10 h-10 md:w-12 md:h-12 border border-neutral-300 flex items-center justify-center text-neutral-600 hover:bg-neutral-100 disabled:opacity-40 transition text-sm md:text-base"
             >
               &raquo;
             </button>
           </div>
 
-          <form onSubmit={handleSearch} className="flex items-center space-x-2 w-full max-w-xl">
+          {/* 검색 폼 (모바일에서 세로 또는 유연한 배치) */}
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full max-w-xl">
             <select 
               value={searchType}
               onChange={(e) => setSearchType(e.target.value)}
-              className="border border-neutral-300 px-4 py-3.5 text-base bg-white text-neutral-800 outline-none focus:border-neutral-900"
+              className="border border-neutral-300 px-3 md:px-4 py-3 md:py-3.5 text-sm md:text-base bg-white text-neutral-800 outline-none focus:border-neutral-900 rounded-none"
             >
               <option value="title">제목</option>
               <option value="content">내용</option>
@@ -399,12 +398,12 @@ export default function Notice() {
               placeholder="검색어를 입력하세요"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="flex-1 border border-neutral-300 px-4 py-3.5 text-base outline-none focus:border-neutral-900"
+              className="flex-1 border border-neutral-300 px-3.5 md:px-4 py-3 md:py-3.5 text-sm md:text-base outline-none focus:border-neutral-900 rounded-none"
             />
 
             <button 
               type="submit"
-              className="bg-neutral-800 hover:bg-black text-white px-7 py-3.5 text-base font-medium transition"
+              className="bg-neutral-800 hover:bg-black text-white px-5 md:px-7 py-3 md:py-3.5 text-sm md:text-base font-medium transition rounded-none"
             >
               검색
             </button>
@@ -414,7 +413,7 @@ export default function Notice() {
       </section>
 
       {/* 시크릿 푸터 영역 */}
-      <footer className="w-full py-10 border-t border-neutral-100 text-center text-sm text-neutral-400">
+      <footer className="w-full py-8 md:py-10 border-t border-neutral-100 text-center text-xs md:text-sm text-neutral-400">
         <p onClick={handleSecretClick} className="cursor-pointer inline-block select-none">
           © TKM MANAGEMENT. All rights reserved.
         </p>
@@ -422,18 +421,18 @@ export default function Notice() {
 
       {/* 3. 팝업 뷰어창 (Modal) 영역 */}
       {selectedPost && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 md:p-4 overflow-y-auto">
           <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-none shadow-2xl relative">
             
             <button 
               onClick={() => setSelectedPost(null)}
-              className="absolute top-6 right-6 text-neutral-400 hover:text-black text-3xl font-light w-12 h-12 flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 transition"
+              className="absolute top-4 right-4 md:top-6 md:right-6 text-neutral-400 hover:text-black text-2xl md:text-3xl font-light w-10 h-10 md:w-12 md:h-12 flex items-center justify-center bg-neutral-100 hover:bg-neutral-200 transition z-10"
               aria-label="닫기"
             >
               &times;
             </button>
 
-            <div className="p-6 md:p-10">
+            <div className="p-5 md:p-10">
               <NoticeDetail post={selectedPost} onBack={() => setSelectedPost(null)} />
             </div>
 
@@ -454,19 +453,19 @@ export default function Notice() {
 
       {/* 5. 사진 첨부 기능이 포함된 글쓰기/수정 에디터 모달 */}
       {showEditorModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white w-full max-w-2xl p-8 shadow-xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-bold mb-6 text-neutral-900">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-3 md:p-4 overflow-y-auto">
+          <div className="bg-white w-full max-w-2xl p-5 md:p-8 shadow-xl max-h-[90vh] overflow-y-auto my-auto">
+            <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6 text-neutral-900">
               {postToEdit ? '게시글 수정' : '새 공지사항 작성'}
             </h2>
 
-            <form onSubmit={handleSavePost} className="space-y-5">
+            <form onSubmit={handleSavePost} className="space-y-4 md:space-y-5">
               <div>
-                <label className="block text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">카테고리</label>
+                <label className="block text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">카테고리</label>
                 <select 
                   value={category} 
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full border border-neutral-300 p-3.5 text-base focus:outline-none focus:border-neutral-900 bg-white uppercase"
+                  className="w-full border border-neutral-300 p-3 md:p-3.5 text-sm md:text-base focus:outline-none focus:border-neutral-900 bg-white uppercase rounded-none"
                 >
                   <option value="news">NEWS</option>
                   <option value="interview">INTERVIEW</option>
@@ -475,29 +474,29 @@ export default function Notice() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">제목</label>
+                <label className="block text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">제목</label>
                 <input 
                   type="text" 
                   value={title} 
                   onChange={(e) => setTitle(e.target.value)} 
                   required
-                  className="w-full border border-neutral-300 p-3.5 text-base focus:outline-none focus:border-neutral-900"
+                  className="w-full border border-neutral-300 p-3 md:p-3.5 text-sm md:text-base focus:outline-none focus:border-neutral-900 rounded-none"
                   placeholder="제목을 입력하세요"
                 />
               </div>
 
               {/* 사진 첨부 필드 */}
               <div>
-                <label className="block text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">사진 첨부</label>
+                <label className="block text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">사진 첨부</label>
                 <input 
                   type="file" 
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="w-full border border-neutral-300 p-2.5 text-sm focus:outline-none text-neutral-600 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-neutral-900 file:text-white hover:file:bg-black cursor-pointer"
+                  className="w-full border border-neutral-300 p-2 text-xs md:text-sm focus:outline-none text-neutral-600 file:mr-3 md:file:mr-4 file:py-2 file:px-3 md:file:px-4 file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-neutral-900 file:text-white hover:file:bg-black cursor-pointer"
                 />
                 {/* 이미지 미리보기 */}
                 {imageUrl && (
-                  <div className="mt-3 relative w-36 h-36 border border-neutral-200">
+                  <div className="mt-3 relative w-28 h-28 md:w-36 md:h-36 border border-neutral-200">
                     <img src={imageUrl} alt="미리보기" className="w-full h-full object-cover" />
                     <button 
                       type="button" 
@@ -511,13 +510,13 @@ export default function Notice() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">내용</label>
+                <label className="block text-xs md:text-sm font-semibold uppercase tracking-wider text-neutral-500 mb-1.5">내용</label>
                 <textarea 
                   value={content} 
                   onChange={(e) => setContent(e.target.value)} 
                   required
-                  rows={8}
-                  className="w-full border border-neutral-300 p-3.5 text-base focus:outline-none focus:border-neutral-900"
+                  rows={6}
+                  className="w-full border border-neutral-300 p-3 md:p-3.5 text-sm md:text-base focus:outline-none focus:border-neutral-900 rounded-none"
                   placeholder="내용을 입력하세요"
                 />
               </div>
@@ -526,14 +525,14 @@ export default function Notice() {
                 <button 
                   type="button" 
                   onClick={() => setShowEditorModal(false)}
-                  className="border border-neutral-300 px-7 py-3.5 text-base font-medium text-neutral-600 hover:bg-neutral-50 transition"
+                  className="border border-neutral-300 px-5 md:px-7 py-2.5 md:py-3.5 text-sm md:text-base font-medium text-neutral-600 hover:bg-neutral-50 transition"
                 >
                   취소
                 </button>
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="bg-neutral-900 text-white px-7 py-3.5 text-base font-medium hover:bg-black transition"
+                  className="bg-neutral-900 text-white px-5 md:px-7 py-2.5 md:py-3.5 text-sm md:text-base font-medium hover:bg-black transition"
                 >
                   {loading ? '업로드 및 저장 중...' : '저장하기'}
                 </button>

@@ -35,26 +35,26 @@ export default function Entertainer() {
   return (
     <div className="w-full bg-white text-neutral-900 min-h-screen flex flex-col justify-between selection:bg-black selection:text-white">
       
-      {/* 1. 상단 타이틀 섹션 (인쇄 시 숨김) */}
-      <section className="w-full pt-32 pb-16 px-6 text-center border-b border-neutral-100 print:hidden">
+      {/* 1. 상단 타이틀 섹션 */}
+      <section className="w-full pt-24 pb-10 px-4 md:px-6 text-center border-b border-neutral-100 print:hidden">
         <div className="max-w-4xl mx-auto space-y-2">
-          <span className="text-xs font-semibold tracking-[0.4em] text-neutral-400 uppercase">
+          <span className="text-[10px] md:text-xs font-semibold tracking-[0.4em] text-neutral-400 uppercase">
             TK MANAGEMENT ARTISTS
           </span>
-          <h1 className="text-3xl md:text-5xl font-black tracking-tight uppercase">
+          <h1 className="text-2xl md:text-5xl font-black tracking-tight uppercase">
             ARTIST
           </h1>
         </div>
       </section>
 
-      {/* 2. 2열 그리드 갤러리 섹션 (인쇄 시 숨김) */}
-      <section className="max-w-6xl mx-auto px-6 py-20 w-full flex-1 print:hidden">
+      {/* 2. 그리드 갤러리 섹션 (✨ 핵심 수정: 모바일 2열, PC 2열 넓은 간격) */}
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-10 md:py-20 w-full flex-1 print:hidden">
         {loading ? (
-          <div className="text-center py-20 text-neutral-400">데이터를 불러오는 중입니다...</div>
+          <div className="text-center py-20 text-neutral-400 text-sm">데이터를 불러오는 중입니다...</div>
         ) : actors.length === 0 ? (
-          <div className="text-center py-20 text-neutral-400">등록된 아티스트가 없습니다.</div>
+          <div className="text-center py-20 text-neutral-400 text-sm">등록된 아티스트가 없습니다.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-20">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-x-4 md:gap-x-12 gap-y-10 md:gap-y-20">
             {actors.map((actor) => {
               const isDimmed = hoveredId !== null && hoveredId !== actor.id;
 
@@ -68,7 +68,7 @@ export default function Entertainer() {
                     isDimmed ? 'opacity-60' : 'opacity-100'
                   }`}
                 >
-                  <div className="w-full aspect-[3/4] overflow-hidden bg-neutral-100 shadow-sm relative">
+                  <div className="w-full aspect-[3/4] overflow-hidden bg-neutral-100 shadow-sm relative rounded-lg md:rounded-none">
                     <motion.img 
                       layoutId={`actor-img-${actor.id}`}
                       src={actor.image} 
@@ -77,11 +77,11 @@ export default function Entertainer() {
                     />
                   </div>
 
-                  <div className="pt-4 flex justify-between items-baseline px-1">
-                    <h3 className="text-lg font-bold text-neutral-900 tracking-tight group-hover:text-black transition">
+                  <div className="pt-3 md:pt-4 flex flex-col md:flex-row justify-between items-start md:items-baseline px-1 gap-1 md:gap-0">
+                    <h3 className="text-sm sm:text-base md:text-lg font-bold text-neutral-900 tracking-tight group-hover:text-black transition truncate w-full">
                       {actor.name}
                     </h3>
-                    <p className="text-xs text-neutral-400 tracking-widest uppercase font-medium">
+                    <p className="text-[10px] md:text-xs text-neutral-400 tracking-widest uppercase font-medium truncate w-full">
                       {actor.englishName}
                     </p>
                   </div>
@@ -92,8 +92,8 @@ export default function Entertainer() {
         )}
       </section>
 
-      {/* 3. 푸터 (인쇄 시 숨김) */}
-      <footer className="w-full py-16 border-t border-neutral-100 text-center text-xs text-neutral-400 tracking-widest print:hidden">
+      {/* 3. 푸터 */}
+      <footer className="w-full py-10 md:py-16 border-t border-neutral-100 text-center text-[10px] md:text-xs text-neutral-400 tracking-widest print:hidden">
         <p>© TK MANAGEMENT. ALL RIGHTS RESERVED.</p>
       </footer>
 

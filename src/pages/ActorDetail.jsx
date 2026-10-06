@@ -409,11 +409,12 @@ export default function ActorDetail({ actor, onClose, user, onUpdateSuccess }) {
                   <p className="text-sm text-neutral-400 font-medium">{actor.englishName}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 bg-neutral-50 p-5 rounded-xl text-sm border border-neutral-100">
-                  <div><span className="text-neutral-400">성별:</span> <span className="font-semibold text-neutral-800">{actor.gender}</span></div>
-                  <div><span className="text-neutral-400">생년월일:</span> <span className="font-semibold text-neutral-800">{actor.birth}</span></div>
-                  <div><span className="text-neutral-400">키:</span> <span className="font-semibold text-neutral-800">{actor.height ? `${actor.height}cm` : ''}</span></div>
-                  <div className="col-span-2"><span className="text-neutral-400">학력:</span> <span className="font-semibold text-neutral-800">{actor.education}</span></div>
+                {/* ✨ 수정된 프로필 정보 박스 (한 줄 깨짐 방지 및 반응형 적용) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-neutral-50 p-5 rounded-xl text-xs md:text-sm border border-neutral-100">
+                  <div className="flex items-center gap-2"><span className="text-neutral-400 whitespace-nowrap">성별:</span> <span className="font-semibold text-neutral-800">{actor.gender}</span></div>
+                  <div className="flex items-center gap-2"><span className="text-neutral-400 whitespace-nowrap">생년월일:</span> <span className="font-semibold text-neutral-800">{actor.birth}</span></div>
+                  <div className="flex items-center gap-2"><span className="text-neutral-400 whitespace-nowrap">키:</span> <span className="font-semibold text-neutral-800">{actor.height ? `${actor.height}cm` : ''}</span></div>
+                  <div className="flex items-center gap-2 col-span-1 sm:col-span-2"><span className="text-neutral-400 whitespace-nowrap">학력:</span> <span className="font-semibold text-neutral-800">{actor.education}</span></div>
                 </div>
               </div>
             </div>

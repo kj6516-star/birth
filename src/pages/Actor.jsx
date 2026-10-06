@@ -121,21 +121,21 @@ export default function Actor() {
     <div className="w-full bg-white text-neutral-900 select-none min-h-screen flex flex-col justify-between">
       
       {/* 상단 타이틀 섹션 */}
-      <section className="w-full pt-28 pb-12 px-6 text-center bg-white">
-        <div className="max-w-6xl mx-auto space-y-4">
-          <span className="text-xs md:text-sm font-semibold tracking-[0.3em] text-neutral-400 uppercase">
+      <section className="w-full pt-24 pb-8 px-4 md:px-6 text-center bg-white">
+        <div className="max-w-6xl mx-auto space-y-2">
+          <span className="text-[10px] md:text-sm font-semibold tracking-[0.3em] text-neutral-400 uppercase">
             ACTORS
           </span>
-          <h1 className="text-3xl md:text-4xl font-black tracking-tight text-neutral-900">
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-neutral-900">
             배우
           </h1>
           
-          {/* 👉 핵심: 로그인(관리자) 상태일 때만 보이는 '배우 등록' 버튼 */}
+          {/* 👉 관리자 상태일 때만 보이는 '배우 등록' 버튼 */}
           {user && (
             <div className="pt-2">
               <button 
                 onClick={handleOpenAddModal}
-                className="bg-neutral-900 text-white px-5 py-2 text-xs font-bold rounded hover:bg-black transition shadow-sm"
+                className="bg-neutral-900 text-white px-4 py-2 text-xs font-bold rounded hover:bg-black transition shadow-sm"
               >
                 + 새 배우 등록
               </button>
@@ -144,19 +144,19 @@ export default function Actor() {
         </div>
       </section>
 
-      {/* 배우 그리드 목록 섹션 */}
-      <section className="max-w-6xl mx-auto px-6 py-8 w-full flex-1">
+      {/* 배우 그리드 목록 섹션 (✨ 핵심 수정: 모바일 2열, PC 4열) */}
+      <section className="max-w-6xl mx-auto px-4 md:px-6 py-6 w-full flex-1">
         {loading ? (
-          <div className="text-center py-20 text-neutral-400">데이터를 불러오는 중입니다...</div>
+          <div className="text-center py-20 text-neutral-400 text-sm">데이터를 불러오는 중입니다...</div>
         ) : actors.length === 0 ? (
-          <div className="text-center py-20 text-neutral-400">등록된 배우가 없습니다.</div>
+          <div className="text-center py-20 text-neutral-400 text-sm">등록된 배우가 없습니다.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
             {actors.map((actor) => (
               <div 
                 key={actor.id} 
                 onClick={() => setSelectedActor(actor)} 
-                className="group cursor-pointer space-y-3 relative"
+                className="group cursor-pointer space-y-2 relative"
               >
                 {/* 이미지 박스 */}
                 <div className="w-full aspect-[3/4] overflow-hidden bg-neutral-100 rounded-lg shadow-sm">
@@ -166,9 +166,9 @@ export default function Actor() {
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition duration-500"
                   />
                 </div>
-                {/* 배우 이름 */}
+                {/* 배우 이름 (✨ 모바일과 PC 글씨 크기 분기) */}
                 <div className="text-left">
-                  <h3 className="text-xl font-bold text-neutral-900 tracking-wide">
+                  <h3 className="text-sm sm:text-base md:text-xl font-bold text-neutral-900 tracking-wide truncate">
                     {actor.name}
                   </h3>
                 </div>
@@ -179,26 +179,26 @@ export default function Actor() {
       </section>
 
       {/* 여백용 풋터 공간 확보 */}
-      <div className="py-12"></div>
+      <div className="py-8"></div>
 
       {/* 배우 상세 모달 */}
       <ActorDetail 
         actor={selectedActor} 
         onClose={() => setSelectedActor(null)} 
-        user={user} // 관리자 여부를 상세 모달에도 전달 가능
-        onUpdateSuccess={fetchActors} // 수정/삭제 후 목록을 새로고침하기 위함
+        user={user} 
+        onUpdateSuccess={fetchActors} 
       />
 
       {/* 관리자용 배우 등록/수정 모달 */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-2xl rounded-lg shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-neutral-200 flex justify-between items-center bg-neutral-50">
-              <h3 className="text-lg font-bold">{editingActorId ? '배우 정보 수정' : '새 배우 등록'}</h3>
+            <div className="p-4 md:p-6 border-b border-neutral-200 flex justify-between items-center bg-neutral-50">
+              <h3 className="text-base md:text-lg font-bold">{editingActorId ? '배우 정보 수정' : '새 배우 등록'}</h3>
               <button onClick={() => setIsModalOpen(false)} className="text-neutral-400 hover:text-black font-bold">✕</button>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+            <form onSubmit={handleSubmit} className="p-4 md:p-6 space-y-4 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-neutral-500 mb-1">이름 (Name)</label>
@@ -230,7 +230,7 @@ export default function Actor() {
                 <input type="text" name="image" value={formData.image} onChange={(e) => setFormData({...formData, image: e.target.value})} placeholder="https://..." className="w-full border border-neutral-300 rounded p-2.5 text-sm focus:outline-black" />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-neutral-500 sb-1 text-neutral-500 mb-1">학력/소속 (Education)</label>
+                <label className="block text-xs font-semibold text-neutral-500 mb-1">학력/소속 (Education)</label>
                 <input type="text" name="education" value={formData.education} onChange={(e) => setFormData({...formData, education: e.target.value})} className="w-full border border-neutral-300 rounded p-2.5 text-sm focus:outline-black" />
               </div>
               <div>

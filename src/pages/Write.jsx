@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../back/supabaseClient'; // 👈 본인 프로젝트의 supabaseClient 경로 확인
 
 export default function Write() {
@@ -30,6 +30,15 @@ export default function Write() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  // 🧹 메모리 누수 방지: 미리보기 URL이 생성될 때마다 기존 URL 정리
+  useEffect(() => {
+    return () => {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
@@ -43,6 +52,10 @@ export default function Write() {
     const file = e.target.files[0];
     if (file) {
       setPhotoFile(file);
+      // 기존 미리보기 URL이 있다면 메모리 해제
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
       // 브라우저에서 즉시 볼 수 있는 임시 URL 생성
       const previewUrl = URL.createObjectURL(file);
       setPhotoPreview(previewUrl);
@@ -75,7 +88,10 @@ export default function Write() {
         // 'audition-photos'는 본인이 생성한 Storage 버킷 이름으로 변경하세요.
         const { error: uploadError } = await supabase.storage
           .from('audition-photos')
-          .upload(filePath, photoFile);
+          .upload(filePath, photoFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
         if (uploadError) throw uploadError;
 
@@ -108,8 +124,10 @@ export default function Write() {
         introduction: formData.introduction || null,
         photoUrl: uploadedPhotoUrl || null,
         portfolioLink: formData.portfolioLink || null,
-        agree: formData.agree,
+        agree: formData.agree
       };
+      
+      console.log(submitData);
 
       // Supabase 'Audition_form' 테이블에 데이터 삽입
       const { error } = await supabase
@@ -128,6 +146,9 @@ export default function Write() {
         specialty: '', introduction: '', photoUrl: '', portfolioLink: '', agree: false,
       });
       setPhotoFile(null);
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
       setPhotoPreview('');
 
     } catch (error) {
@@ -140,7 +161,7 @@ export default function Write() {
 
   const getGenderText = (g) => g === 'female' ? '여성 (Female)' : g === 'male' ? '남성 (Male)' : g;
   const getFieldText = (f) => f === 'actor' ? '배우' : f === 'entertainer' ? '엔터테이너' : f;
-
+    
   return (
     <div className="w-full bg-white text-neutral-900 select-none min-h-screen flex flex-col justify-between">
       

@@ -47,7 +47,7 @@ export default function AdminLogin({ onLoginSuccess, onClose }) {
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               required
-              className="w-full border border-neutral-300 p-3 text-sm focus:outline-none focus:border-neutral-900"
+              className="w-full border border-neutral-300 p-3 text-sm text-black focus:outline-none focus:border-neutral-900"
               placeholder="admin@example.com"
             />
           </div>
@@ -58,7 +58,7 @@ export default function AdminLogin({ onLoginSuccess, onClose }) {
               value={password} 
               onChange={(e) => setPassword(e.target.value)} 
               required
-              className="w-full border border-neutral-300 p-3 text-sm focus:outline-none focus:border-neutral-900"
+              className="w-full border border-neutral-300 p-3 text-sm text-black focus:outline-none focus:border-neutral-900"
               placeholder="••••••••"
             />
           </div>
