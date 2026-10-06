@@ -22,7 +22,6 @@ export default function Write() {
     agree: false,
   });
 
-  // 📸 사진 파일 객체와 미리보기 URL을 관리할 상태 추가
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState('');
 
@@ -30,7 +29,6 @@ export default function Write() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  // 🧹 메모리 누수 방지: 미리보기 URL이 생성될 때마다 기존 URL 정리
   useEffect(() => {
     return () => {
       if (photoPreview) {
@@ -47,22 +45,18 @@ export default function Write() {
     });
   };
 
-  // 📸 사진 파일 선택 시 처리 함수 (미리보기 포함)
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setPhotoFile(file);
-      // 기존 미리보기 URL이 있다면 메모리 해제
       if (photoPreview) {
         URL.revokeObjectURL(photoPreview);
       }
-      // 브라우저에서 즉시 볼 수 있는 임시 URL 생성
       const previewUrl = URL.createObjectURL(file);
       setPhotoPreview(previewUrl);
     }
   };
 
-  // 1단계: 폼 유효성 검사 및 모달창 띄우기
   const handlePreSubmit = (e) => {
     e.preventDefault();
     if (!formData.agree) {
@@ -72,20 +66,17 @@ export default function Write() {
     setShowConfirmModal(true);
   };
 
-  // 2단계: 모달 확인 후 실제 Supabase 전송 (스토리지 업로드 포함)
   const handleFinalSubmit = async () => {
     setLoading(true);
 
     try {
       let uploadedPhotoUrl = formData.photoUrl;
 
-      // 📸 1. 사용자가 새로 선택한 사진 파일이 있다면 Supabase Storage에 업로드
       if (photoFile) {
         const fileExt = photoFile.name.split('.').pop();
         const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
         const filePath = `${fileName}`;
 
-        // 'audition-photos'는 본인이 생성한 Storage 버킷 이름으로 변경하세요.
         const { error: uploadError } = await supabase.storage
           .from('audition-photos')
           .upload(filePath, photoFile, {
@@ -95,7 +86,6 @@ export default function Write() {
 
         if (uploadError) throw uploadError;
 
-        // 업로드된 파일의 Public URL 가져오기
         const { data: publicUrlData } = supabase.storage
           .from('audition-photos')
           .getPublicUrl(filePath);
@@ -103,12 +93,10 @@ export default function Write() {
         uploadedPhotoUrl = publicUrlData.publicUrl;
       }
 
-      // 생년월일 조합
       const birthDate = formData.birthYear && formData.birthMonth && formData.birthDay
         ? `${formData.birthYear}-${String(formData.birthMonth).padStart(2, '0')}-${String(formData.birthDay).padStart(2, '0')}`
         : null;
 
-      // DB 스키마와 1:1 매칭되는 전송 객체 생성 (업로드된 사진 URL 적용)
       const submitData = {
         name: formData.name, 
         gender: formData.gender || null,
@@ -126,10 +114,7 @@ export default function Write() {
         portfolioLink: formData.portfolioLink || null,
         agree: formData.agree
       };
-      
-      console.log(submitData);
 
-      // Supabase 'Audition_form' 테이블에 데이터 삽입
       const { error } = await supabase
         .from('Audition_form')
         .insert([submitData]);
@@ -139,7 +124,6 @@ export default function Write() {
       setShowConfirmModal(false);
       setIsSubmitted(true);
 
-      // 성공 시 폼 및 사진 상태 초기화
       setFormData({
         name: '', gender: '', field: '', birthYear: '', birthMonth: '', birthDay: '',
         phone: '', email: '', height: '', weight: '', instagram: '', videoLink: '',
@@ -200,7 +184,7 @@ export default function Write() {
         ) : (
           <form onSubmit={handlePreSubmit} className="space-y-10">
             
-            {/* ================= 01. 기본 인적사항 ================= */}
+            {/* 01. 기본 인적사항 */}
             <div className="space-y-4">
               <h2 className="text-cyan-600 font-bold text-xl tracking-wide">01. 기본 인적사항</h2>
               
@@ -237,7 +221,6 @@ export default function Write() {
                 </div>
               </div>
 
-              {/* 생년월일 */}
               <div className="space-y-1">
                 <label className="block text-base font-semibold text-neutral-600">생년월일 (Birth Date) *</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -312,7 +295,7 @@ export default function Write() {
 
             <hr className="border-neutral-200" />
 
-            {/* ================= 02. SNS 및 포트폴리오 링크 ================= */}
+            {/* 02. SNS 및 포트폴리오 링크 */}
             <div className="space-y-4">
               <h2 className="text-cyan-600 font-bold text-xl tracking-wide">02. SNS 및 포트폴리오 링크</h2>
 
@@ -347,7 +330,7 @@ export default function Write() {
 
             <hr className="border-neutral-200" />
 
-            {/* ================= 03. 자기소개 및 사진/영상 첨부 ================= */}
+            {/* 03. 자기소개 및 사진/영상 첨부 */}
             <div className="space-y-4">
               <h2 className="text-cyan-600 font-bold text-xl tracking-wide">03. 자기소개 및 사진/영상 첨부</h2>
 
@@ -362,11 +345,10 @@ export default function Write() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* 📸 프로필 사진 파일 업로드 및 실시간 미리보기 추가 */}
                 <div className="space-y-2">
-                  <label className="block text-base font-semibold text-neutral-600">프로필 사진 첨부 *</label>
+                  <label className="block text-base font-semibold text-neutral-600">프로필 사진 첨부 </label>
                   <input
-                    type="file" accept="image/*" onChange={handlePhotoChange} required
+                    type="file" accept="image/*" onChange={handlePhotoChange} 
                     className="w-full p-2.5 border border-neutral-300 rounded focus:outline-none focus:border-amber-500 text-sm bg-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
                   />
                   {photoPreview && (
@@ -387,7 +369,7 @@ export default function Write() {
               </div>
             </div>
 
-            {/* ================= 개인정보 수집 동의 ================= */}
+            {/* 개인정보 수집 동의 */}
             <div className="space-y-2 pt-2">
               <fieldset className="border border-neutral-300 rounded p-4">
                 <legend className="px-2 text-base font-bold text-neutral-500 bg-white">개인정보 수집 및 이용에 대한 안내</legend>
@@ -434,18 +416,21 @@ export default function Write() {
         )}
       </section>
 
-      {/* ================= 입력 내용 확인 모달 ================= */}
+      {/* ================= 💡 완벽하게 수정된 확인 모달 레이아웃 ================= */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl max-w-3xl w-full p-8 space-y-6 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-[99999] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-hidden">
+          
+          {/* 모달 박스: 화면 높이의 최대 85% 고정 및 절대 벗어나지 않는 Flex 구조 */}
+          <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl relative">
             
-            <div className="border-b pb-4">
+            {/* 1. 상단 타이틀 영역 (고정) */}
+            <div className="px-6 py-5 border-b border-neutral-200 shrink-0 bg-white rounded-t-2xl">
               <h3 className="text-xl font-black text-neutral-900">📝 지원서 내용 확인</h3>
-              <p className="text-sm text-neutral-500 mt-1">작성하신 내용이 정확한지 입력창 형태로 다시 한번 검토해주세요.</p>
+              <p className="text-sm text-neutral-500 mt-1">작성하신 내용이 정확한지 입력창 형태로 검토해주세요.</p>
             </div>
 
-            {/* 미리보기 영역 */}
-            <div className="space-y-6 text-neutral-700">
+            {/* 2. 스크롤 영역 (이 부분만 스크롤됨) */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-white">
               
               {/* 01. 기본 인적사항 확인 */}
               <div className="space-y-3">
@@ -519,7 +504,8 @@ export default function Write() {
 
             </div>
 
-            <div className="flex gap-3 pt-4">
+            {/* 3. 하단 버튼 영역 (고정 노출 - 절대 안 잘림) */}
+            <div className="px-6 py-4 border-t border-neutral-200 shrink-0 flex gap-3 bg-white rounded-b-2xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
               <button
                 type="button"
                 onClick={() => setShowConfirmModal(false)}
