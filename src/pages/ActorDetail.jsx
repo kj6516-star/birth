@@ -465,7 +465,7 @@ export default function ActorDetail({ actor, onClose, user, onUpdateSuccess }) {
                 onClick={handleCastingInquiry}
                 className="w-full sm:flex-1 py-4 px-6 rounded-xl bg-white hover:bg-neutral-50 text-neutral-900 border border-neutral-300 font-bold text-sm flex items-center justify-center gap-3 transition shadow-sm"
               >
-                이 배우 캐스팅 문의하기
+                캐스팅 문의하기
               </button>
             </div>
           </>

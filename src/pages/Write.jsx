@@ -472,28 +472,35 @@ export default function Write() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-base font-semibold text-neutral-600">프로필 사진 첨부 </label>
-                  <input
-                    type="file" accept="image/*" onChange={handlePhotoChange} 
-                    className="w-full p-2.5 border border-neutral-300 rounded focus:outline-none focus:border-amber-500 text-sm bg-white file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
-                  />
-                  {photoPreview && (
-                    <div className="mt-2 relative w-32 h-40 border border-neutral-200 rounded overflow-hidden shadow-sm">
-                      <img src={photoPreview} alt="프로필 미리보기" className="w-full h-full object-cover" />
-                    </div>
-                  )}
-                </div>
+  {/* 왼쪽: 프로필 사진 첨부 영역 */}
+  <div className="flex flex-col">
+    <label className="block text-base font-semibold text-neutral-600 mb-2">프로필 사진 첨부</label>
+    <input
+      type="file" 
+      accept="image/*" 
+      onChange={handlePhotoChange} 
+      className="w-full p-3 border border-neutral-300 rounded focus:outline-none focus:border-amber-500 text-sm bg-white file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100"
+    />
+    {photoPreview && (
+      <div className="mt-2 relative w-32 h-40 border border-neutral-200 rounded overflow-hidden shadow-sm">
+        <img src={photoPreview} alt="프로필 미리보기" className="w-full h-full object-cover" />
+      </div>
+    )}
+  </div>
 
-                <div className="space-y-1">
-                  <label className="block text-base font-semibold text-neutral-600">연기 영상 또는 쇼릴 링크 (선택)</label>
-                  <input
-                    type="text" name="portfolioLink" placeholder="자유 연기 영상 링크 (유튜브/드라이브)"
-                    value={formData.portfolioLink} onChange={handleChange}
-                    className="w-full p-3.5 border border-neutral-300 rounded focus:outline-none focus:border-amber-500 text-base"
-                  />
-                </div>
-              </div>
+  {/* 오른쪽: 연기 영상 링크 영역 */}
+  <div className="flex flex-col">
+    <label className="block text-base font-semibold text-neutral-600 mb-2">연기 영상 또는 쇼릴 링크 (선택)</label>
+    <input
+      type="text" 
+      name="portfolioLink" 
+      placeholder="자유 연기 영상 링크 (유튜브/드라이브)"
+      value={formData.portfolioLink} 
+      onChange={handleChange}
+      className="w-full p-4 border border-neutral-300 rounded focus:outline-none focus:border-amber-500 text-base"
+    />
+  </div>
+</div>
             </div>
 
             {/* 개인정보 수집 동의 */}
