@@ -232,7 +232,7 @@ export default function Notice() {
           <span className="text-xs md:text-base font-semibold tracking-[0.3em] text-neutral-400 uppercase">
             News & Notice
           </span>
-          <h1 className="text-3xl md:text-6xl font-bold tracking-tight text-neutral-900">
+          <h1 className="text-2xl md:text-4xl font-black tracking-tight text-neutral-900">
             공지사항
           </h1>
         </div>
