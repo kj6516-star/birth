@@ -1,96 +1,55 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import Header from './components/Header';
-import Footer from './components/Footer';
-import About from './pages/About';
-import Greeting from './pages/Greeting';
-import Info from './pages/Info';
-import Write from './pages/Write';
-import Contact from './pages/Contact';
-import Actor from './pages/Actor';
-import Entertaner from './pages/Entertaner';
-import Notice3 from './pages/Notice3';
-import Notice2 from './pages/Notice2';
-import ParticleBackground from './components/ParticleBackground'; // [이동] 최상단으로 불러오기
-
-// 메인 홈 화면 컴포넌트 (박스 제한 제거)
-function Home() {
-  return (
-    <main className="flex-1 flex flex-col justify-center items-center text-center px-4 max-w-5xl mx-auto relative w-full py-20 z-10">
-      
-      {/* 기존에 있던 배경 빛 효과 */}
-      <div className="absolute w-72 h-72 bg-neutral-800 rounded-full blur-3xl opacity-20 -z-10 animate-pulse"></div>
-
-      <span className="text-xs md:text-xl uppercase tracking-[0.3em] text-neutral-400 mb-4 font-light">
-        TK MANAGEMENT
-      </span>
-      
-      <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tighter uppercase mb-6 leading-tight">
-        Beyond Limits, <br />
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-400 to-neutral-600">
-          Create The Future
-        </span>
-      </h1>
-      
-      <p className="text-neutral-400 text-sm md:text-base max-w-xl mb-10 font-light leading-relaxed">
-        새로운 가치를 창출하고 대중과 소통하는 차세대 엔터테인먼트 기업 TKM과 함께 빛날 인재를 기다립니다.
-      </p>
-
-      {/* 액션 버튼 그룹 */}
-      <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto justify-center">
-        <Link 
-          to="/audition/info" 
-          className="px-8 py-4 bg-white text-black text-xs md:text-base font-semibold tracking-widest uppercase rounded-none hover:bg-neutral-200 transition shadow-lg text-center"
-        >
-          Online Audition
-        </Link>
-        <Link 
-          to="/contact" 
-          className="px-8 py-4 border border-neutral-700 text-white text-xs md:text-base font-semibold tracking-widest uppercase rounded-none hover:bg-neutral-900 transition text-center"
-        >
-          Business Inquiry
-        </Link>
-      </div>
-    </main>
-  );
-}
+import React, { useState } from 'react';
+import Step1_Welcome from './pages/Step1_Welcome';
+import Step2_Profile from './pages/Step2_Profile';
+import Step3_MissionGuide from './pages/Step3_MissionGuide';
+import Step4_QuizMission from './pages/Step4_QuizMission';
+import Step5_CardMatch from './pages/Step5_CardMatch';
+import Step6_VolcanoBridge from './pages/Step6_VolcanoBridge';
+import Step7_Birthday from './pages/Step7_Birthday';
+import Step8_Certificate from './pages/Step8_Certificate';
 
 export default function App() {
+  const [step, setStep] = useState(1);
+  const [formData, setFormData] = useState({
+    name: '안시환',
+    kindergarten: '햇살마루 어린이집',
+    nickname: '',
+    photo: null,
+  });
+
+  const nextStep = () => setStep((prev) => Math.min(prev + 1, 8));
+  const prevStep = () => setStep((prev) => Math.max(prev - 1, 1));
+
+  const renderStep = () => {
+    switch (step) {
+      case 1: return <Step1_Welcome onNext={nextStep} />;
+      case 2: return <Step2_Profile formData={formData} setFormData={setFormData} onNext={nextStep} />;
+      case 3: return <Step3_MissionGuide formData={formData} onNext={nextStep} />;
+      case 4: return <Step4_QuizMission onNext={nextStep} />;
+      case 5: return <Step5_CardMatch onNext={nextStep} />;
+      case 6: return <Step6_VolcanoBridge onNext={nextStep} />;
+      case 7: return <Step7_Birthday formData={formData} onNext={nextStep} />;
+      case 8: return <Step8_Certificate formData={formData} onRestart={() => setStep(1)} />;
+      default: return <Step1_Welcome onNext={nextStep} />;
+    }
+  };
+
   return (
-    <Router>
-      {/* [수정] 전체 앱 배경을 은하수 톤(#050811)으로 맞추고 상대 좌표 지정 */}
-      <div className="min-h-screen bg-[#050811] text-white flex flex-col justify-between selection:bg-neutral-700 relative overflow-hidden">
-        
-        {/* [추가] 화면 전체를 채우는 은하수 파티클 배경 */}
-        <ParticleBackground />
-
-        {/* 1. 상단 네비게이션 바 (z-10을 주어 별보다 위에 오도록 설정) */}
-        <div className="relative z-10">
-          <Header />
-        </div>
-
-        {/* 2. 주소에 따라 바뀌는 페이지 영역 */}
-        <div className="relative z-10 flex-1 flex flex-col">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/greeting" element={<Greeting />} />
-            <Route path="/audition/info" element={<Info />} />
-            <Route path="/audition/write" element={<Write />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/artists/actor" element={<Actor />} />
-            <Route path="/artists/entertainer" element={<Entertaner />} />
-            <Route path="/news/notice" element={<Notice3 />} />
-            <Route path="/news/notice2" element={<Notice2 />} />
-          </Routes>
-        </div>
-
-        {/* 3. 하단 푸터 영역 */}
-        <div className="relative z-10">
-          <Footer />
-        </div>
+    <div className="min-h-screen bg-gradient-to-b from-emerald-900 via-stone-900 to-amber-950 flex flex-col items-center justify-center p-4">
+      {/* 책 상단 진행 인디케이터 바 */}
+      <div className="w-full max-w-md mb-4 flex items-center justify-between px-2">
+        {step > 1 && (
+          <button onClick={prevStep} className="text-xs bg-stone-800 text-stone-300 px-3 py-1 rounded-full hover:bg-stone-700 transition">
+            ◀ 이전 페이지
+          </button>
+        )}
         
       </div>
-    </Router>
+
+      {/* 메인 책장 컨테이너 */}
+      <div className="w-full max-w-md bg-stone-900/90 border-4 border-amber-600/70 rounded-3xl shadow-2xl p-6 backdrop-blur-sm transition-all duration-300">
+        {renderStep()}
+      </div>
+    </div>
   );
 }
